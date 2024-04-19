@@ -1,0 +1,29 @@
+-----------------------------------------------------------------------------------------------------------------
+**************************list of empty s3 buckets list in any region***************************
+-----------------------------------------------------------------------------------------------------------------
+
+import boto3
+
+def list_empty_buckets():
+    s3 = boto3.client('s3')
+    response = s3.list_buckets()
+
+    empty_buckets = []
+
+    for bucket in response['Buckets']:
+        bucket_name = bucket['Name']
+        bucket_objects = s3.list_objects_v2(Bucket=bucket_name)
+
+        if 'Contents' not in bucket_objects:
+            empty_buckets.append(bucket_name)
+
+    return empty_buckets
+
+if __name__ == "__main__":
+    empty_buckets = list_empty_buckets()
+    if empty_buckets:
+        print("Empty S3 Buckets:")
+        for bucket in empty_buckets:
+            print(bucket)
+    else:
+        print("No empty S3 buckets found.")

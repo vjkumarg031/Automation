@@ -1,0 +1,136 @@
+--------------------------------------------------------------------------------------------------------------
+**************SCENERIO 01 ************list of unused volumes shows multi regions***************************
+--------------------------------------------------------------------------------------------------------------
+import boto3
+
+def get_unused_volumes():
+    ec2 = boto3.resource('ec2')
+    unused_volumes = []
+    for volume in ec2.volumes.all():
+        if volume.state == 'available':
+            attachments = volume.attachments
+            if not attachments:
+                volume_id = volume.id.replace('\u00A0', ' ')
+                unused_volumes.append(volume_id)
+    return unused_volumes
+
+def main():
+    regions = [region['RegionName'] for region in boto3.client('ec2').describe_regions()['Regions']]
+    for region in regions:
+        print(f"Checking for unused volumes in region {region}")
+        boto3.setup_default_session(region_name=region)
+        unused_volumes = get_unused_volumes()
+        if unused_volumes:
+            print(f"Unused volumes found in region {region}:")
+            for volume in unused_volumes:
+                print(volume)
+        else:
+            print(f"No unused volumes found in region {region}")
+
+if __name__ == "__main__":
+    main()
+
+--------------------------------------------------------------------------------------------------------------
+**************SCENERIO 02 ************list of unused volumes shows specific region***************************
+--------------------------------------------------------------------------------------------------------------
+import boto3
+
+def get_unused_volumes(region_name):
+    ec2 = boto3.resource('ec2', region_name=region_name)
+    unused_volumes = []
+    for volume in ec2.volumes.all():
+        if volume.state == 'available':
+            attachments = volume.attachments
+            if not attachments:
+                unused_volumes.append(volume.id)
+    return unused_volumes
+
+def main():
+    region_name = 'us-east-1'  
+    print(f"Checking for unused volumes in region {region_name}")
+    unused_volumes = get_unused_volumes(region_name)
+    if unused_volumes:
+        print(f"Unused volumes found in region {region_name}:")
+        for volume in unused_volumes:
+            print(volume)
+    else:
+        print(f"No unused volumes found in region {region_name}")
+
+if __name__ == "__main__":
+    main()
+
+--------------------------------------------------------------------------------------------------------------
+*********SCENERIO 03*************list of unused volume delete specific region**********************
+--------------------------------------------------------------------------------------------------------------
+import boto3
+
+def get_unused_volumes(region_name):
+    ec2 = boto3.resource('ec2', region_name=region_name)
+    unused_volumes = []
+    for volume in ec2.volumes.all():
+        if volume.state == 'available':
+            attachments = volume.attachments
+            if not attachments:
+                unused_volumes.append(volume.id)
+    return unused_volumes
+
+def delete_volumes(region_name, volumes):
+    ec2 = boto3.resource('ec2', region_name=region_name)
+    for volume_id in volumes:
+        print(f"Deleting volume {volume_id} in region {region_name}")
+        volume = ec2.Volume(volume_id)
+        volume.delete()
+
+def main():
+    regions = ['us-east-1']  
+    for region_name in regions:
+        print(f"Checking for unused volumes in region {region_name}")
+        unused_volumes = get_unused_volumes(region_name)
+        if unused_volumes:
+            print(f"Unused volumes found in region {region_name}:")
+            for volume in unused_volumes:
+                print(volume)
+            delete_volumes(region_name, unused_volumes)
+        else:
+            print(f"No unused volumes found in region {region_name}")
+
+if __name__ == "__main__":
+    main()
+
+-----------------------------------------------------------------------------------------------------------------
+*********SCENERIO 4*****************list of unused volume delete multi regions*********************************
+-----------------------------------------------------------------------------------------------------------------
+import boto3
+
+def get_unused_volumes():
+    ec2 = boto3.resource('ec2')
+    unused_volumes = []
+    for volume in ec2.volumes.all():
+        if volume.state == 'available':
+            attachments = volume.attachments
+            if not attachments:
+                volume_id = volume.id.replace('\u00A0', ' ')
+                unused_volumes.append(volume_id)
+    return unused_volumes
+
+def delete_volumes(volumes):
+    ec2 = boto3.resource('ec2')
+    for volume in volumes:
+        print(f"Deleting volume {volume}")
+        ec2.Volume(volume).delete()
+
+def main():
+    regions = [region['RegionName'] for region in boto3.client('ec2').describe_regions()['Regions']]
+    for region in regions:
+        print(f"Checking for unused volumes in region {region}")
+        boto3.setup_default_session(region_name=region)
+        unused_volumes = get_unused_volumes()
+        if unused_volumes:
+            delete_volumes(unused_volumes)
+        else:
+            print(f"No unused volumes found in region {region}")
+
+if __name__ == "__main__":
+    main()
+
+
